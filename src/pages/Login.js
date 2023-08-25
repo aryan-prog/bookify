@@ -42,8 +42,8 @@ function Login() {
         Login
       </Button>
     </Form>
-    {/* <h1 className='mt-5 mb-5'>OR</h1>
-    <Button variant='danger'>Sign In with Google</Button> */}
+    <h1 className='mt-5 mb-5'>OR</h1>
+    <Button onClick={firebase.signinwithGoogle} variant='danger'>Sign In with Google</Button>
     </div>
   )
 }
