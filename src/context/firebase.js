@@ -3,8 +3,8 @@ import { initializeApp } from "firebase/app";
 import { getAuth,createUserWithEmailAndPassword,
     signInWithEmailAndPassword, GoogleAuthProvider,
     signInWithPopup,onAuthStateChanged } from "firebase/auth";
-import {getFirestore,collection,addDoc} from "firebase/firestore";
-import {getStorage,ref,uploadBytes} from "firebase/storage";
+import {getFirestore,collection,addDoc,getDocs} from "firebase/firestore";
+import {getStorage,ref,uploadBytes,getDownloadURL} from "firebase/storage";
 
 const FirebaseContext = createContext(null);
 
@@ -62,11 +62,20 @@ export const FirebaseProvider =(props) =>{
         })
     };
 
+    const listAllBooks = () =>{
+        return getDocs(collection(firestore,'books'));
+    }
+
+    const getImageURL = (path) => {
+        return getDownloadURL(ref(storage,path));
+    }
+
     return(
     <FirebaseContext.Provider 
     value={{signupUserWithEmailAndPassword,
     signinUserWithEmailAndPassword,
-    signinwithGoogle,handleCreateNewListing , isLoggedIn}}>
+    signinwithGoogle,handleCreateNewListing,
+    listAllBooks ,getImageURL, isLoggedIn}}>
         {props.children}
     </FirebaseContext.Provider>
     );
