@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth,createUserWithEmailAndPassword,
     signInWithEmailAndPassword, GoogleAuthProvider,
     signInWithPopup,onAuthStateChanged } from "firebase/auth";
-import {getFirestore,collection,addDoc,getDocs} from "firebase/firestore";
+import {getFirestore,collection,addDoc,getDocs,getDoc,doc} from "firebase/firestore";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "firebase/storage";
 
 const FirebaseContext = createContext(null);
@@ -66,6 +66,24 @@ export const FirebaseProvider =(props) =>{
         return getDocs(collection(firestore,'books'));
     }
 
+    const placeOrder = async(bookID,qty) =>{
+        const collectionRef=collection(firestore,'books',bookID,'orders');
+        const result = await addDoc(collectionRef,{
+            userID:user.uid,
+            userEmail:user.email,
+            displayName:user.displayName,
+            photoURL:user.photoURL,
+            qty:Number(qty)
+        });
+        return result;
+    }
+
+    const getBookbyID = async(id) =>{
+        const docRef = doc(firestore,'books',id);
+        const result =await getDoc(docRef);
+        return result;
+    }
+
     const getImageURL = (path) => {
         return getDownloadURL(ref(storage,path));
     }
@@ -75,7 +93,7 @@ export const FirebaseProvider =(props) =>{
     value={{signupUserWithEmailAndPassword,
     signinUserWithEmailAndPassword,
     signinwithGoogle,handleCreateNewListing,
-    listAllBooks ,getImageURL, isLoggedIn}}>
+    listAllBooks ,getImageURL, getBookbyID,placeOrder,isLoggedIn}}>
         {props.children}
     </FirebaseContext.Provider>
     );

@@ -7,6 +7,7 @@ import RegisterPage from './pages/Register';
 import Login from './pages/Login';
 import ListingPage from './pages/List';
 import Home from './pages/Home';
+import Details from './pages/Details';
 //Components
 import MyNavbar from './components/navbar';
 
@@ -20,6 +21,7 @@ function App() {
       <Route path="/login" element={<Login/>}/>
       <Route path="/register" element={<RegisterPage/>}/>
       <Route path="/book/list" element={<ListingPage/>}/>
+      <Route path="/book/view/:bookId" element={<Details/>}/>
     </Routes>
     </div>
   );

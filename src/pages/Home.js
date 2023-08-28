@@ -13,7 +13,7 @@ function Home() {
 
   return (
     <div className='container mt-5'>
-    {books.map((book) => (<BookCard key={book.id} {...book.data()}/>))}
+    {books.map((book) => (<BookCard key={book.id} id={book.id} {...book.data()}/>))}
     </div>
   )
 }
