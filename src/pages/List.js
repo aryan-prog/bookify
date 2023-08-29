@@ -15,7 +15,9 @@ function ListingPage() {
         e.preventDefault();
        await firebase.handleCreateNewListing(name,isbnNumber,coverPic,price);
     };
-
+    if(!firebase.isLoggedIn)
+    return <h1>Please Log In</h1>
+    
   return (
     <div className='container mt-5'>
       <Form>
