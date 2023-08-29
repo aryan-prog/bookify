@@ -10,6 +10,8 @@ import Home from './pages/Home';
 import Details from './pages/Details';
 //Components
 import MyNavbar from './components/navbar';
+import Orders from './pages/Orders';
+import ViewOrders from './pages/ViewOrders';
 
 
 function App() {
@@ -22,6 +24,8 @@ function App() {
       <Route path="/register" element={<RegisterPage/>}/>
       <Route path="/book/list" element={<ListingPage/>}/>
       <Route path="/book/view/:bookId" element={<Details/>}/>
+      <Route path="/book/orders" element={<Orders/>}/>
+      <Route path="/book/orders/:bookId" element={<ViewOrders/>}/>
     </Routes>
     </div>
   );

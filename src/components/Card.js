@@ -13,7 +13,7 @@ function BookCard(props) {
   useEffect(() => {
     firebase.getImageURL(props.imageURL).then((url) => setUrl(url));
   });
-  
+
   return (
     <CardGroup>
       <Card style={{ width: "18rem", margin: "15px" }}>
@@ -25,7 +25,7 @@ function BookCard(props) {
             {props.displayName} and this book costs Rs. {props.price}
           </Card.Text>
           <Button
-            onClick={(e) => navigate(`/book/view/${props.id}`)}
+            onClick={(e) => navigate(props.link)}
             variant="primary"
           >View</Button>
         </Card.Body>

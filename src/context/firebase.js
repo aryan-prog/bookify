@@ -1,13 +1,26 @@
-import { createContext, useContext,useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
-import { getAuth,createUserWithEmailAndPassword,
-    signInWithEmailAndPassword, GoogleAuthProvider,
-    signInWithPopup,onAuthStateChanged } from "firebase/auth";
-import {getFirestore,collection,addDoc,getDocs,getDoc,doc} from "firebase/firestore";
-import {getStorage,ref,uploadBytes,getDownloadURL} from "firebase/storage";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+} from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  getDoc,
+  doc,
+  query,
+  where,
+} from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const FirebaseContext = createContext(null);
-
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,85 +29,114 @@ const firebaseConfig = {
   projectId: "bookify-847fc",
   storageBucket: "bookify-847fc.appspot.com",
   messagingSenderId: "706989647053",
-  appId: "1:706989647053:web:f1ee6cbec0555e34783584"
+  appId: "1:706989647053:web:f1ee6cbec0555e34783584",
 };
 
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 
-export const useFirebase  = ()=> useContext(FirebaseContext);
-const firebaseAuth=getAuth(firebaseApp);
-const firestore=getFirestore(firebaseApp);
-const storage=getStorage(firebaseApp);
-const googleProvider =new GoogleAuthProvider();
+export const useFirebase = () => useContext(FirebaseContext);
+const firebaseAuth = getAuth(firebaseApp);
+const firestore = getFirestore(firebaseApp);
+const storage = getStorage(firebaseApp);
+const googleProvider = new GoogleAuthProvider();
 
-export const FirebaseProvider =(props) =>{
-    const [user,setUser] =useState("");
+export const FirebaseProvider = (props) => {
+  const [user, setUser] = useState("");
 
-    useEffect(() =>{
-        onAuthStateChanged(firebaseAuth,(user)=> {
-            if(user)
-            setUser(user);
-            else
-            setUser(null);
-        })
-    },[])
-    const signupUserWithEmailAndPassword =(email,password) => createUserWithEmailAndPassword(firebaseAuth,email,password);
+  useEffect(() => {
+    onAuthStateChanged(firebaseAuth, (user) => {
+      if (user) setUser(user);
+      else setUser(null);
+    });
+  }, []);
+  const signupUserWithEmailAndPassword = (email, password) =>
+    createUserWithEmailAndPassword(firebaseAuth, email, password);
 
-    const signinUserWithEmailAndPassword = (email,password) => signInWithEmailAndPassword(firebaseAuth,email,password);
+  const signinUserWithEmailAndPassword = (email, password) =>
+    signInWithEmailAndPassword(firebaseAuth, email, password);
 
-    const signinwithGoogle=() =>signInWithPopup(firebaseAuth,googleProvider);
+  const signinwithGoogle = () => signInWithPopup(firebaseAuth, googleProvider);
 
-    const isLoggedIn = user ? true : false;
+  const isLoggedIn = user ? true : false;
 
-    const handleCreateNewListing =async(name,isbn,cover,price) =>{
-        const imageRef = ref(storage, 'uploads/images/${Date.now()}-${cover.name}');
-        const uploadResult = await uploadBytes(imageRef,cover);
-        return await addDoc(collection(firestore,'books'),{
-            name,
-            isbn,
-            price,
-            imageURL: uploadResult.ref.fullPath,
-            userID:user.uid,
-            userEmail:user.email,
-            userName: user.displayName,
-            photoURL: user.photoURL
-        })
-    };
+  const handleCreateNewListing = async (name, isbn, cover, price) => {
+    const imageRef = ref(storage, "uploads/images/${Date.now()}-${cover.name}");
+    const uploadResult = await uploadBytes(imageRef, cover);
+    return await addDoc(collection(firestore, "books"), {
+      name,
+      isbn,
+      price,
+      imageURL: uploadResult.ref.fullPath,
+      userID: user.uid,
+      userEmail: user.email,
+      userName: user.displayName,
+      photoURL: user.photoURL,
+    });
+  };
 
-    const listAllBooks = () =>{
-        return getDocs(collection(firestore,'books'));
+  const listAllBooks = () => {
+    return getDocs(collection(firestore, "books"));
+  };
+
+  const placeOrder = async (bookID, qty) => {
+    const collectionRef = collection(firestore, "books", bookID, "orders");
+    const result = await addDoc(collectionRef, {
+      userID: user.uid,
+      userEmail: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      qty: Number(qty),
+    });
+    return result;
+  };
+
+  const fetchMyBooks = async (userId) => {
+    if (user) {
+      const collectionRef = collection(firestore, "books");
+      const q = query(collectionRef, where("userID", "==", userId));
+
+      const result = await getDocs(q);
+      return result;
+    } else {
+      return null;
     }
+  };
 
-    const placeOrder = async(bookID,qty) =>{
-        const collectionRef=collection(firestore,'books',bookID,'orders');
-        const result = await addDoc(collectionRef,{
-            userID:user.uid,
-            userEmail:user.email,
-            displayName:user.displayName,
-            photoURL:user.photoURL,
-            qty:Number(qty)
-        });
-        return result;
-    }
+  const getOrders = async (bookId) => {
+    const collectionRef = collection(firestore, "books", bookId, "orders");
+    const result = await getDocs(collectionRef);
+    return result;
+  };
 
-    const getBookbyID = async(id) =>{
-        const docRef = doc(firestore,'books',id);
-        const result =await getDoc(docRef);
-        return result;
-    }
+  const getBookbyID = async (id) => {
+    const docRef = doc(firestore, "books", id);
+    const result = await getDoc(docRef);
+    return result;
+  };
 
-    const getImageURL = (path) => {
-        return getDownloadURL(ref(storage,path));
-    }
+  const getImageURL = (path) => {
+    return getDownloadURL(ref(storage, path));
+  };
 
-    return(
-    <FirebaseContext.Provider 
-    value={{signupUserWithEmailAndPassword,
-    signinUserWithEmailAndPassword,
-    signinwithGoogle,handleCreateNewListing,
-    listAllBooks ,getImageURL, getBookbyID,placeOrder,isLoggedIn}}>
-        {props.children}
+  return (
+    <FirebaseContext.Provider
+      value={{
+        signupUserWithEmailAndPassword,
+        signinUserWithEmailAndPassword,
+        signinwithGoogle,
+        handleCreateNewListing,
+        listAllBooks,
+        getImageURL,
+        getBookbyID,
+        placeOrder,
+        fetchMyBooks,
+        getOrders,
+        user,
+        isLoggedIn,
+      }}
+    >
+      {props.children}
     </FirebaseContext.Provider>
-    );
-}
+  );
+};
